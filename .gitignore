@@ -7,3 +7,9 @@ node_modules/
 scripts/
 index.html.bak
 print/preview-*.png
+print/caos-preview-*.png
+print/caos-design-*.png
+print/caos-color-*.png
+print/caos-font-*.png
+print/caos-V*.png
+print/caos-F*.png
