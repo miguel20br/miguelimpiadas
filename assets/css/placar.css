@@ -128,23 +128,26 @@
   letter-spacing: .08em;
 }
 
-/* ME BANNER -------------------------------------------------- */
+/* ME BANNER — pill compacta, não estica a coluna inteira */
 .pl-me-banner {
-  background: linear-gradient(135deg, rgba(0,212,255,.15), rgba(26,108,255,.06));
-  border: 2.5px solid var(--cyan);
-  border-radius: 14px;
-  padding: 12px 16px;
-  margin-bottom: 20px;
+  width: fit-content;
+  max-width: 100%;
+  height: fit-content;
+  align-self: start;     /* importante: não estica vertical no grid */
+  justify-self: start;
+  background: rgba(0,212,255,.10);
+  border: 1.5px solid var(--cyan);
+  border-radius: 999px;
+  padding: 6px 14px;
+  margin-bottom: 14px;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: .9rem;
+  font-size: .82rem;
   font-weight: 700;
   color: var(--ink);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  box-shadow: 4px 4px 0 rgba(0,212,255,.3);
+  gap: 10px;
+  line-height: 1.2;
 }
 .pl-me-banner b { color: var(--blue); }
 .pl-link-btn {
@@ -420,51 +423,48 @@
 .ar-pinned { font-size: .75rem; opacity: .55; }
 .ar-head-actions { display: inline-flex; gap: 6px; }
 
-/* Controles: 2 grupos (pts + moedas) lado a lado */
+/* Controles: uma linha única, sem labels, color-coded */
 .ar-controls {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
   align-items: center;
-}
-.ar-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(0,0,0,.28);
-  border: 1px solid rgba(255,255,255,.06);
+  gap: 3px;
+  flex-wrap: nowrap;
+  background: rgba(0,0,0,.30);
+  border: 1px solid rgba(255,255,255,.05);
   padding: 4px;
-  border-radius: 12px;
+  border-radius: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
-.ar-label {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: .7rem;
-  font-weight: 800;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  padding: 0 6px 0 4px;
-  line-height: 1;
+.ar-controls::-webkit-scrollbar { display: none; }
+
+/* Separador vertical sutil entre pts e moedas */
+.ar-sep {
+  width: 1px;
+  height: 22px;
+  background: rgba(255,255,255,.15);
+  margin: 0 6px;
+  flex-shrink: 0;
 }
-.ar-pts .ar-label { color: rgba(0,212,255,.7); }
-.ar-moedas .ar-label { color: #f0b048; font-size: 1rem; padding: 0 4px 0 2px; }
 
 /* Botões — base */
 .ar-btn {
-  min-width: 34px;
-  min-height: 34px;
-  padding: 0 8px;
+  min-width: 30px;
+  min-height: 32px;
+  padding: 0 6px;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: .9rem;
+  font-size: .85rem;
   font-weight: 800;
   background: rgba(255,255,255,.06);
   color: #fff;
   border: 1px solid rgba(255,255,255,.12);
-  border-radius: 8px;
+  border-radius: 7px;
   cursor: pointer;
   line-height: 1;
   transition: transform .1s, background .12s, border-color .12s, box-shadow .12s;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
 }
 .ar-btn:hover { transform: translateY(-1px); }
 .ar-btn:active { transform: translateY(1px); }
@@ -527,19 +527,19 @@
   box-shadow: 0 2px 12px rgba(200,32,26,.4);
 }
 
-/* Valores grandes destacados */
+/* Valores — Space Grotesk pra harmonizar com placar */
 .ar-val {
-  font-family: 'Special Elite', monospace;
-  font-weight: 400;
-  font-size: 1.25rem;
-  min-width: 36px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  min-width: 30px;
   text-align: center;
-  background: rgba(0,0,0,.45);
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 0 6px;
   line-height: 1;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
-.ar-val-pts { color: var(--cyan); }
+.ar-val-pts { color: var(--cyan); font-size: 1.15rem; padding: 0 10px; min-width: 36px; }
 .ar-val-moedas { color: #f0b048; }
 
 .pl-admin-global {

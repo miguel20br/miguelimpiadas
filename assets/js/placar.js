@@ -320,20 +320,15 @@ function renderAdmin() {
         </div>
       </div>
       <div class="ar-controls">
-        <div class="ar-group ar-pts">
-          <span class="ar-label">PTS</span>
-          <button class="ar-btn ar-minus" data-act="p-5">−5</button>
-          <button class="ar-btn ar-minus" data-act="p-1">−1</button>
-          <span class="ar-val ar-val-pts">${s.pontos}</span>
-          <button class="ar-btn ar-plus" data-act="p+1">+1</button>
-          <button class="ar-btn ar-plus" data-act="p+5">+5</button>
-        </div>
-        <div class="ar-group ar-moedas">
-          <span class="ar-label">🪙</span>
-          <button class="ar-btn ar-coin-minus" data-act="m-1">−1</button>
-          <span class="ar-val ar-val-moedas">${s.moedas}</span>
-          <button class="ar-btn ar-coin-plus" data-act="m+1">+1</button>
-        </div>
+        <button class="ar-btn ar-minus" data-act="p-5">−5</button>
+        <button class="ar-btn ar-minus" data-act="p-1">−1</button>
+        <span class="ar-val ar-val-pts">${s.pontos}</span>
+        <button class="ar-btn ar-plus" data-act="p+1">+1</button>
+        <button class="ar-btn ar-plus" data-act="p+5">+5</button>
+        <span class="ar-sep"></span>
+        <button class="ar-btn ar-coin-minus" data-act="m-1">−1</button>
+        <span class="ar-val ar-val-moedas">${s.moedas}🪙</span>
+        <button class="ar-btn ar-coin-plus" data-act="m+1">+1</button>
       </div>
     </div>`,
     )
