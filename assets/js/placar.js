@@ -149,6 +149,7 @@ function render() {
 
   const isAdmin = state.identity?.kind === "admin";
   els.admin.hidden = !isAdmin;
+  document.body.classList.toggle("pl-with-admin", isAdmin);
   if (isAdmin) renderAdmin();
 }
 
@@ -266,17 +267,19 @@ function renderList() {
       const dy = oldRect.top - newRect.top;
       if (Math.abs(dy) > 1) {
         const el = entry.el;
+        // dy > 0: linha se moveu PRA CIMA visualmente (subiu no ranking)
+        // dy < 0: linha se moveu PRA BAIXO visualmente (caiu no ranking)
+        el.classList.add(dy > 0 ? "moving-up" : "moving-down");
         el.style.transition = "none";
         el.style.transform = `translateY(${dy}px)`;
         void el.offsetHeight;
         requestAnimationFrame(() => {
-          el.style.transition = "transform .5s cubic-bezier(.34,1.56,.64,1)";
+          el.style.transition = "transform .8s cubic-bezier(.34,1.4,.5,1)";
           el.style.transform = "translateY(0)";
-          // Limpa inline transform depois da animação pra não sobrescrever
-          // o transform da classe .me (translate(-1px,-1px))
           const cleanup = () => {
             el.style.transition = "";
             el.style.transform = "";
+            el.classList.remove("moving-up", "moving-down");
             el.removeEventListener("transitionend", cleanup);
           };
           el.addEventListener("transitionend", cleanup, { once: true });

@@ -276,9 +276,80 @@
 .pl-pontos.pl-flash-down,
 .pl-moedas.pl-flash-down { animation: pl-flash-down 1s cubic-bezier(.34,1.56,.64,1); }
 
+/* ─── Highlight quando linha tá se movendo de posição ─── */
+.pl-row.moving-up {
+  background: linear-gradient(90deg, rgba(0,212,255,.22) 0%, rgba(0,212,255,.05) 60%, rgba(0,212,255,.02) 100%) !important;
+  border: 2.5px solid var(--cyan) !important;
+  box-shadow: 0 0 24px rgba(0,212,255,.55), 6px 6px 0 var(--cyan) !important;
+  z-index: 3;
+}
+.pl-row.moving-up .pl-pos {
+  color: var(--cyan) !important;
+}
+.pl-row.moving-up .pl-pos::after {
+  content: " ↑";
+  color: var(--cyan);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 900;
+  font-size: 1em;
+  margin-left: 4px;
+  text-shadow: 0 0 8px rgba(0,212,255,.7);
+}
+.pl-row.moving-down {
+  background: linear-gradient(90deg, rgba(200,32,26,.20) 0%, rgba(200,32,26,.05) 60%, rgba(200,32,26,.02) 100%) !important;
+  border: 2.5px solid var(--red) !important;
+  box-shadow: 0 0 24px rgba(200,32,26,.5), 6px 6px 0 var(--red) !important;
+  z-index: 3;
+}
+.pl-row.moving-down .pl-pos {
+  color: var(--red) !important;
+}
+.pl-row.moving-down .pl-pos::after {
+  content: " ↓";
+  color: var(--red);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 900;
+  font-size: 1em;
+  margin-left: 4px;
+  text-shadow: 0 0 8px rgba(200,32,26,.7);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pl-pontos.pl-flash-up, .pl-pontos.pl-flash-down,
   .pl-moedas.pl-flash-up, .pl-moedas.pl-flash-down { animation: none; }
+}
+
+/* ─── Layout desktop: admin à direita do placar ─── */
+@media (min-width: 1024px) {
+  body.pl-with-admin .pl-main {
+    max-width: 1280px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 460px;
+    column-gap: 28px;
+    grid-template-areas:
+      "hero    hero"
+      "banner  admin"
+      "list    admin"
+      "foot    foot";
+  }
+  body.pl-with-admin .pl-hero      { grid-area: hero; }
+  body.pl-with-admin .pl-me-banner { grid-area: banner; }
+  body.pl-with-admin .pl-list      { grid-area: list; }
+  body.pl-with-admin .pl-admin     {
+    grid-area: admin;
+    align-self: start;
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    margin-top: 0;
+  }
+  body.pl-with-admin .pl-foot      { grid-area: foot; }
+  /* scrollbar sutil no painel admin sticky */
+  body.pl-with-admin .pl-admin::-webkit-scrollbar { width: 6px; }
+  body.pl-with-admin .pl-admin::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.18); border-radius: 3px;
+  }
 }
 
 @media (max-width: 480px) {
