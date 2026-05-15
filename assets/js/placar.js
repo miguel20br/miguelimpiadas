@@ -265,12 +265,21 @@ function renderList() {
       const newRect = entry.el.getBoundingClientRect();
       const dy = oldRect.top - newRect.top;
       if (Math.abs(dy) > 1) {
-        entry.el.style.transition = "none";
-        entry.el.style.transform = `translateY(${dy}px)`;
-        void entry.el.offsetHeight;
+        const el = entry.el;
+        el.style.transition = "none";
+        el.style.transform = `translateY(${dy}px)`;
+        void el.offsetHeight;
         requestAnimationFrame(() => {
-          entry.el.style.transition = "transform .5s cubic-bezier(.34,1.56,.64,1)";
-          entry.el.style.transform = "translateY(0)";
+          el.style.transition = "transform .5s cubic-bezier(.34,1.56,.64,1)";
+          el.style.transform = "translateY(0)";
+          // Limpa inline transform depois da animação pra não sobrescrever
+          // o transform da classe .me (translate(-1px,-1px))
+          const cleanup = () => {
+            el.style.transition = "";
+            el.style.transform = "";
+            el.removeEventListener("transitionend", cleanup);
+          };
+          el.addEventListener("transitionend", cleanup, { once: true });
         });
       }
     }
