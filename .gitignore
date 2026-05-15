@@ -1,4 +1,8 @@
 manual_operador_v7_0.md
 .claude/
+.agents/
+skills-lock.json
 *.DS_Store
 node_modules/
+scripts/
+index.html.bak
