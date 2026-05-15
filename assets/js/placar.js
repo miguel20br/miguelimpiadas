@@ -213,6 +213,10 @@ function renderList() {
   // Se havia placeholder ".pl-empty", limpa
   if (els.list.querySelector(".pl-empty")) els.list.innerHTML = "";
 
+  // Set de ids cujos pontos OU moedas mudaram — eles ganham o highlight cyan/red
+  // Outras linhas que se moverem apenas pra abrir/fechar espaço fazem slide sutil
+  const scoreChanged = new Set();
+
   // Update / create rows na ordem final
   for (let i = 0; i < sorted.length; i++) {
     const s = sorted[i];
@@ -247,13 +251,15 @@ function renderList() {
     const currentChild = els.list.children[i];
     if (currentChild !== li) els.list.insertBefore(li, currentChild || null);
 
-    // Flash se pontos/moedas mudaram
+    // Detecta mudança de score → flash + marca pra highlight forte
     if (entry.lastPontos !== s.pontos) {
       flashCell(li.querySelector(".pl-pontos"), s.pontos > entry.lastPontos);
+      scoreChanged.add(s.id);
       entry.lastPontos = s.pontos;
     }
     if (entry.lastMoedas !== s.moedas) {
       flashCell(li.querySelector(".pl-moedas"), s.moedas > entry.lastMoedas);
+      scoreChanged.add(s.id);
       entry.lastMoedas = s.moedas;
     }
   }
@@ -267,18 +273,29 @@ function renderList() {
       const dy = oldRect.top - newRect.top;
       if (Math.abs(dy) > 1) {
         const el = entry.el;
-        // dy > 0: linha se moveu PRA CIMA visualmente (subiu no ranking)
-        // dy < 0: linha se moveu PRA BAIXO visualmente (caiu no ranking)
-        el.classList.add(dy > 0 ? "moving-up" : "moving-down");
+        const isProtagonist = scoreChanged.has(id);
+        // Só o atleta que TEVE a alteração ganha o highlight + arrow
+        // Outros apenas deslizam smooth pra dar espaço (sem destaque)
+        if (isProtagonist) {
+          el.classList.add(dy > 0 ? "moving-up" : "moving-down");
+        }
+        el.style.willChange = "transform";
         el.style.transition = "none";
         el.style.transform = `translateY(${dy}px)`;
         void el.offsetHeight;
+        // Protagonista: animação mais lenta com bounce sutil (chama atenção)
+        // Coadjuvantes: animação rápida ease-out (saem da frente sem competir)
+        const duration = isProtagonist ? "900ms" : "550ms";
+        const easing = isProtagonist
+          ? "cubic-bezier(.22,1.0,.36,1)"   // ease-out smooth (sem bounce)
+          : "cubic-bezier(.4,0,.2,1)";       // material standard ease
         requestAnimationFrame(() => {
-          el.style.transition = "transform .8s cubic-bezier(.34,1.4,.5,1)";
+          el.style.transition = `transform ${duration} ${easing}`;
           el.style.transform = "translateY(0)";
           const cleanup = () => {
             el.style.transition = "";
             el.style.transform = "";
+            el.style.willChange = "";
             el.classList.remove("moving-up", "moving-down");
             el.removeEventListener("transitionend", cleanup);
           };
