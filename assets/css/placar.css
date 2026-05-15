@@ -1,5 +1,7 @@
 /* Placar — página dedicada (/placar) */
 
+[hidden] { display: none !important; }
+
 .pl-body {
   background: linear-gradient(180deg, var(--paper) 0%, #eef3ff 60%, #e0faff 100%);
   min-height: 100dvh;

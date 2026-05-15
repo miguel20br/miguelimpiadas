@@ -466,17 +466,116 @@ tbody tr:last-child td{border-bottom:none}
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(8,15,31,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;padding-bottom:max(20px,calc(20px + env(safe-area-inset-bottom)));opacity:0;pointer-events:none;transition:opacity .25s var(--ease)}
 
-/* FAB → link pra /placar */
-.placar-fab{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,calc(16px + env(safe-area-inset-bottom)));z-index:900;
-  background:var(--blue);color:#fff;border:3px solid var(--ink);border-radius:99px;
-  padding:14px 22px;font-family:'Boogaloo',sans-serif;font-size:1.1rem;letter-spacing:.02em;
-  text-decoration:none;display:inline-flex;align-items:center;gap:10px;
-  box-shadow:4px 4px 0 var(--ink);min-height:48px;
-  transition:transform .15s var(--bounce)}
-.placar-fab:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
-.placar-fab-dot{width:8px;height:8px;background:var(--cyan);border-radius:50%;flex-shrink:0;animation:placar-pulse 1.4s ease-in-out infinite}
-@keyframes placar-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.4}}
-@media(max-width:380px){.placar-fab{padding:12px 16px;font-size:.95rem}}
+/* ─────── FAB: link pra /placar ─────── */
+.placar-fab{
+  position:fixed;
+  right:max(16px,env(safe-area-inset-right));
+  bottom:max(16px,calc(16px + env(safe-area-inset-bottom)));
+  z-index:900;
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 22px 14px 18px;
+  min-height:52px;
+  background:linear-gradient(135deg,#1a6cff 0%,#0048d6 100%);
+  color:#fff;
+  text-decoration:none;
+  border:none;
+  border-radius:99px;
+  font-family:'Boogaloo',sans-serif;
+  font-size:1.1rem;
+  letter-spacing:.02em;
+  line-height:1;
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  box-shadow:
+    0 4px 0 var(--ink),
+    0 10px 24px rgba(26,108,255,.45),
+    inset 0 1px 0 rgba(255,255,255,.22);
+  transform:translateZ(0);
+  transition:transform .18s var(--bounce),box-shadow .18s var(--ease);
+  animation:placar-fab-enter .6s var(--bounce) .4s both;
+}
+.placar-fab::before{
+  /* highlight no topo, simulando luz */
+  content:'';
+  position:absolute;
+  inset:1px 1px 50% 1px;
+  border-radius:99px 99px 80px 80px / 99px 99px 40px 40px;
+  background:linear-gradient(180deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 100%);
+  pointer-events:none;
+}
+.placar-fab:hover{
+  transform:translateY(-3px);
+  box-shadow:
+    0 7px 0 var(--ink),
+    0 16px 32px rgba(26,108,255,.55),
+    inset 0 1px 0 rgba(255,255,255,.25);
+}
+.placar-fab:active{
+  transform:translateY(2px);
+  box-shadow:
+    0 1px 0 var(--ink),
+    0 4px 12px rgba(26,108,255,.35),
+    inset 0 1px 0 rgba(255,255,255,.22);
+  transition-duration:.08s;
+}
+.placar-fab:focus-visible{
+  outline:3px solid var(--cyan);
+  outline-offset:3px;
+}
+
+.placar-fab-dot{
+  position:relative;
+  width:10px;height:10px;
+  background:#fff;
+  border-radius:50%;
+  flex-shrink:0;
+  box-shadow:0 0 8px rgba(255,255,255,.8);
+}
+.placar-fab-dot::before,
+.placar-fab-dot::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:rgba(0,212,255,.7);
+  animation:placar-ring 1.8s ease-out infinite;
+}
+.placar-fab-dot::after{animation-delay:.9s}
+
+.placar-fab-label{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;line-height:1}
+.placar-fab-eyebrow{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  opacity:.85;
+  line-height:1;
+}
+.placar-fab-text{font-size:1.05rem;letter-spacing:.01em}
+
+@keyframes placar-ring{
+  0%{transform:scale(1);opacity:.7}
+  100%{transform:scale(3);opacity:0}
+}
+@keyframes placar-fab-enter{
+  from{opacity:0;transform:translate(20px,20px) scale(.6)}
+  to  {opacity:1;transform:translate(0,0) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){
+  .placar-fab,.placar-fab-dot::before,.placar-fab-dot::after{animation:none}
+  .placar-fab{transition:none}
+}
+@media(max-width:420px){
+  .placar-fab{padding:12px 18px 12px 14px;font-size:1rem}
+  .placar-fab-text{font-size:.95rem}
+}
+@media(max-width:340px){
+  .placar-fab-eyebrow{display:none}
+}
 .modal-overlay.open{opacity:1;pointer-events:all}
 .modal{background:var(--paper);border:3px solid var(--ink);border-radius:20px;padding:32px 28px;max-width:480px;width:100%;box-shadow:8px 8px 0 var(--ink);transform:scale(.9) translateY(16px);transition:transform .3s var(--bounce)}
 .modal-overlay.open .modal{transform:scale(1) translateY(0)}
