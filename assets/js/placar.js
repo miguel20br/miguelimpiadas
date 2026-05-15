@@ -40,6 +40,7 @@ const els = {
   list: $("pl-list"),
   admin: $("pl-admin"),
   adminList: $("pl-admin-list"),
+  adminSearch: $("pl-admin-search"),
   oculto: $("pl-oculto"),
   faseInput: $("pl-fase-input"),
   faseSave: $("pl-fase-save"),
@@ -166,50 +167,130 @@ function renderMeBanner() {
   if (changeBtn) changeBtn.onclick = changeAthletePin;
 }
 
+// Map<id, { el, lastPontos, lastMoedas }> pra reusar elementos e detectar mudanças
+const rowMap = new Map();
+
+function flashCell(el, isUp) {
+  if (!el) return;
+  el.classList.remove("pl-flash-up", "pl-flash-down");
+  // force reflow pra restart animation
+  void el.offsetWidth;
+  el.classList.add(isUp ? "pl-flash-up" : "pl-flash-down");
+  setTimeout(() => el.classList.remove("pl-flash-up", "pl-flash-down"), 1000);
+}
+
 function renderList() {
   const hidden = state.config.placar_oculto;
   const isAdmin = state.identity?.kind === "admin";
-  // Atletas e não-logados veem "?" quando placar oculto; admin vê tudo
   const showHidden = hidden && !isAdmin;
   const meId = state.identity?.kind === "athlete" ? state.identity.score_id : null;
 
   if (!state.scores.length) {
     els.list.innerHTML = `<li class="pl-empty">Sem atletas cadastrados ainda.<small>Miguel: clique 🔑, faça login, e use o painel admin pra cadastrar.</small></li>`;
+    rowMap.clear();
     return;
   }
 
-  // Quando oculto, ordem alfabética por nome (não revela ranking pela posição visual)
+  // Quando oculto: alfabético. Visível: pontos desc, desempate alfabético
   const sorted = showHidden
     ? [...state.scores].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
     : [...state.scores].sort((a, b) => b.pontos - a.pontos || a.nome.localeCompare(b.nome, "pt-BR"));
 
-  els.list.innerHTML = sorted
-    .map((s, i) => {
-      const medal = !showHidden && i === 0 ? "🥇"
-                  : !showHidden && i === 1 ? "🥈"
-                  : !showHidden && i === 2 ? "🥉" : "";
-      const me = s.id === meId;
-      const cls = ["pl-row",
-                   !showHidden && i < 3 && "podio",
-                   showHidden && "oculto",
-                   me && "me"].filter(Boolean).join(" ");
-      const posCell = showHidden ? "?" : (i + 1);
-      const pontosCell = showHidden
-        ? `?<span class="pl-unit">MPTS</span>`
-        : `${s.pontos}<span class="pl-unit">MPTS</span>`;
-      return `<li class="${cls}">
-        <span class="pl-pos">${posCell}</span>
-        <span class="pl-nome">${escapeHtml(s.nome)} ${medal}${me ? '<span class="pl-me-tag">você</span>' : ""}</span>
-        <span class="pl-pontos">${pontosCell}</span>
-        <span class="pl-moedas">${s.moedas}🪙</span>
-      </li>`;
-    })
-    .join("");
+  // FLIP step 1 — capturar posições atuais
+  const oldRects = new Map();
+  for (const [id, entry] of rowMap) oldRects.set(id, entry.el.getBoundingClientRect());
+
+  // Remove rows de atletas que sumiram (deletados)
+  const currentIds = new Set(sorted.map((s) => s.id));
+  for (const [id, entry] of rowMap) {
+    if (!currentIds.has(id)) {
+      entry.el.remove();
+      rowMap.delete(id);
+    }
+  }
+
+  // Se havia placeholder ".pl-empty", limpa
+  if (els.list.querySelector(".pl-empty")) els.list.innerHTML = "";
+
+  // Update / create rows na ordem final
+  for (let i = 0; i < sorted.length; i++) {
+    const s = sorted[i];
+    const me = s.id === meId;
+    const medal = !showHidden && i === 0 ? "🥇" : !showHidden && i === 1 ? "🥈" : !showHidden && i === 2 ? "🥉" : "";
+    const posCell = showHidden ? "?" : i + 1;
+    const pontosCell = showHidden
+      ? `?<span class="pl-unit">MPTS</span>`
+      : `${s.pontos}<span class="pl-unit">MPTS</span>`;
+
+    let entry = rowMap.get(s.id);
+    if (!entry) {
+      const li = document.createElement("li");
+      li.dataset.id = s.id;
+      entry = { el: li, lastPontos: s.pontos, lastMoedas: s.moedas };
+      rowMap.set(s.id, entry);
+      els.list.appendChild(li);
+    }
+    const li = entry.el;
+    li.className = ["pl-row",
+                    !showHidden && i < 3 && "podio",
+                    showHidden && "oculto",
+                    me && "me"].filter(Boolean).join(" ");
+    li.innerHTML = `
+      <span class="pl-pos">${posCell}</span>
+      <span class="pl-nome">${escapeHtml(s.nome)} ${medal}${me ? '<span class="pl-me-tag">você</span>' : ""}</span>
+      <span class="pl-pontos">${pontosCell}</span>
+      <span class="pl-moedas">${s.moedas}🪙</span>
+    `;
+
+    // Reorder no DOM se necessário
+    const currentChild = els.list.children[i];
+    if (currentChild !== li) els.list.insertBefore(li, currentChild || null);
+
+    // Flash se pontos/moedas mudaram
+    if (entry.lastPontos !== s.pontos) {
+      flashCell(li.querySelector(".pl-pontos"), s.pontos > entry.lastPontos);
+      entry.lastPontos = s.pontos;
+    }
+    if (entry.lastMoedas !== s.moedas) {
+      flashCell(li.querySelector(".pl-moedas"), s.moedas > entry.lastMoedas);
+      entry.lastMoedas = s.moedas;
+    }
+  }
+
+  // FLIP step 2 — animar transições
+  requestAnimationFrame(() => {
+    for (const [id, oldRect] of oldRects) {
+      const entry = rowMap.get(id);
+      if (!entry) continue;
+      const newRect = entry.el.getBoundingClientRect();
+      const dy = oldRect.top - newRect.top;
+      if (Math.abs(dy) > 1) {
+        entry.el.style.transition = "none";
+        entry.el.style.transform = `translateY(${dy}px)`;
+        void entry.el.offsetHeight;
+        requestAnimationFrame(() => {
+          entry.el.style.transition = "transform .5s cubic-bezier(.34,1.56,.64,1)";
+          entry.el.style.transform = "translateY(0)";
+        });
+      }
+    }
+  });
+}
+
+function applyAdminFilter() {
+  const q = (els.adminSearch?.value || "").toLowerCase().trim();
+  document.querySelectorAll(".pl-admin-row").forEach((row) => {
+    const nome = row.querySelector(".pl-admin-nome")?.textContent.toLowerCase() || "";
+    row.classList.toggle("filtered-out", q && !nome.includes(q));
+  });
 }
 
 function renderAdmin() {
   els.oculto.checked = !!state.config.placar_oculto;
-  els.faseInput.value = state.config.fase || "";
+  // Não sobrescreve se admin está digitando na fase
+  if (document.activeElement !== els.faseInput) {
+    els.faseInput.value = state.config.fase || "";
+  }
   if (!state.scores.length) {
     els.adminList.innerHTML = `<div class="pl-empty" style="background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.7)">Nenhum atleta. Use <b>+ Atleta</b> abaixo pra começar.</div>`;
     return;
@@ -235,6 +316,7 @@ function renderAdmin() {
     </div>`,
     )
     .join("");
+  applyAdminFilter();  // mantém filtro depois de re-render via realtime
 }
 
 // =============================================================
@@ -341,6 +423,8 @@ function bindEvents() {
     const row = e.target.closest(".pl-admin-row");
     adminAct(row.dataset.id, btn.dataset.act);
   });
+
+  els.adminSearch.addEventListener("input", applyAdminFilter);
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && els.loginOverlay.classList.contains("open")) closeLogin();
