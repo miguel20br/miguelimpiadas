@@ -186,19 +186,33 @@
   gap: 14px;
   align-items: center;
   padding: 14px 18px;
-  background: #fff;
+  background-color: #fff;
   border: 2.5px solid var(--border);
   border-radius: 16px;
-  transition: transform .2s var(--bounce, cubic-bezier(.34,1.56,.64,1)), box-shadow .2s;
+  transition:
+    transform .2s var(--bounce, cubic-bezier(.34,1.56,.64,1)),
+    background-color .55s ease,
+    border-color .55s ease,
+    box-shadow .55s ease;
 }
 .pl-row.podio {
   border-color: var(--blue);
   box-shadow: 4px 4px 0 var(--blue);
 }
+
+/* AURA do líder — pulse contínuo no 1º lugar */
+@keyframes pl-leader-aura {
+  0%, 100% { box-shadow: 5px 5px 0 var(--cyan), 0 0 14px rgba(0,212,255,.35); }
+  50%      { box-shadow: 5px 5px 0 var(--cyan), 0 0 28px rgba(0,212,255,.7); }
+}
 .pl-row.podio:nth-child(1) {
   border-color: var(--cyan);
-  background: linear-gradient(135deg, #fff 0%, rgba(0,212,255,.04) 100%);
-  box-shadow: 5px 5px 0 var(--cyan);
+  background-color: rgba(0,212,255,.05);
+  box-shadow: 5px 5px 0 var(--cyan), 0 0 14px rgba(0,212,255,.35);
+  animation: pl-leader-aura 2.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-row.podio:nth-child(1) { animation: none; }
 }
 .pl-row.me {
   border-color: var(--cyan);
@@ -281,9 +295,9 @@
 
 /* ─── Highlight quando linha tá se movendo de posição ─── */
 .pl-row.moving-up {
-  background: linear-gradient(90deg, rgba(0,212,255,.22) 0%, rgba(0,212,255,.05) 60%, rgba(0,212,255,.02) 100%) !important;
-  border: 2.5px solid var(--cyan) !important;
-  box-shadow: 0 0 24px rgba(0,212,255,.55), 6px 6px 0 var(--cyan) !important;
+  background-color: rgba(0,212,255,.18) !important;
+  border-color: var(--cyan) !important;
+  box-shadow: 0 0 28px rgba(0,212,255,.65), 6px 6px 0 var(--cyan) !important;
   z-index: 3;
 }
 .pl-row.moving-up .pl-pos {
@@ -299,9 +313,9 @@
   text-shadow: 0 0 8px rgba(0,212,255,.7);
 }
 .pl-row.moving-down {
-  background: linear-gradient(90deg, rgba(200,32,26,.20) 0%, rgba(200,32,26,.05) 60%, rgba(200,32,26,.02) 100%) !important;
-  border: 2.5px solid var(--red) !important;
-  box-shadow: 0 0 24px rgba(200,32,26,.5), 6px 6px 0 var(--red) !important;
+  background-color: rgba(200,32,26,.16) !important;
+  border-color: var(--red) !important;
+  box-shadow: 0 0 28px rgba(200,32,26,.55), 6px 6px 0 var(--red) !important;
   z-index: 3;
 }
 .pl-row.moving-down .pl-pos {

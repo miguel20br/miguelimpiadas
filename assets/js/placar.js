@@ -283,14 +283,17 @@ function renderList() {
         el.style.transition = "none";
         el.style.transform = `translateY(${dy}px)`;
         void el.offsetHeight;
-        // Protagonista: animação mais lenta com bounce sutil (chama atenção)
-        // Coadjuvantes: animação rápida ease-out (saem da frente sem competir)
-        const duration = isProtagonist ? "900ms" : "550ms";
-        const easing = isProtagonist
-          ? "cubic-bezier(.22,1.0,.36,1)"   // ease-out smooth (sem bounce)
-          : "cubic-bezier(.4,0,.2,1)";       // material standard ease
+        // Protagonista: lenta, ease-in-out smooth — chama atenção
+        // Coadjuvantes: média, mesma curva pra harmonia
+        const duration = isProtagonist ? "1200ms" : "700ms";
+        const easing = "cubic-bezier(.65,0,.35,1)";  // ease-in-out smooth
         requestAnimationFrame(() => {
-          el.style.transition = `transform ${duration} ${easing}`;
+          // Inclui transitions de fade pro highlight (border/bg/shadow)
+          el.style.transition =
+            `transform ${duration} ${easing}, ` +
+            `background-color .55s ease, ` +
+            `border-color .55s ease, ` +
+            `box-shadow .55s ease`;
           el.style.transform = "translateY(0)";
           const cleanup = () => {
             el.style.transition = "";
