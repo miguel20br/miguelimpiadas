@@ -338,18 +338,9 @@
   body.pl-with-admin .pl-admin     {
     grid-area: admin;
     align-self: start;
-    position: sticky;
-    top: 80px;
-    max-height: calc(100vh - 100px);
-    overflow-y: auto;
     margin-top: 0;
   }
   body.pl-with-admin .pl-foot      { grid-area: foot; }
-  /* scrollbar sutil no painel admin sticky */
-  body.pl-with-admin .pl-admin::-webkit-scrollbar { width: 6px; }
-  body.pl-with-admin .pl-admin::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,.18); border-radius: 3px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -396,65 +387,160 @@
 .pl-admin-list { display: grid; gap: 8px; margin-bottom: 18px; }
 .pl-admin-row.filtered-out { display: none; }
 .pl-admin-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 10px;
-  align-items: center;
-  padding: 12px 14px;
-  background: rgba(255,255,255,.04);
+  background: rgba(255,255,255,.03);
   border: 1.5px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color .15s, background .15s;
+}
+.pl-admin-row:hover {
+  background: rgba(255,255,255,.05);
+  border-color: rgba(0,212,255,.25);
+}
+
+/* Header do row: nome (esq) + senha/delete (dir) */
+.ar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ar-nome {
+  font-family: 'Boogaloo', sans-serif;
+  font-size: 1.15rem;
+  color: #fff;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ar-pinned { font-size: .75rem; opacity: .55; }
+.ar-head-actions { display: inline-flex; gap: 6px; }
+
+/* Controles: 2 grupos (pts + moedas) lado a lado */
+.ar-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.ar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0,0,0,.28);
+  border: 1px solid rgba(255,255,255,.06);
+  padding: 4px;
   border-radius: 12px;
 }
-.pl-admin-nome {
-  font-family: 'Boogaloo', sans-serif;
-  font-size: 1.1rem;
-  color: #fff;
-}
-.pl-admin-pinned {
-  font-size: .7rem;
-  opacity: .55;
-  margin-left: 4px;
-  vertical-align: 1px;
-}
-.pl-admin-ctrls {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: center;
-}
-.pl-admin-ctrls button {
-  min-width: 38px;
-  min-height: 38px;
-  padding: 6px 10px;
+.ar-label {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: .85rem;
+  font-size: .7rem;
   font-weight: 800;
-  background: rgba(255,255,255,.08);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  padding: 0 6px 0 4px;
+  line-height: 1;
+}
+.ar-pts .ar-label { color: rgba(0,212,255,.7); }
+.ar-moedas .ar-label { color: #f0b048; font-size: 1rem; padding: 0 4px 0 2px; }
+
+/* Botões — base */
+.ar-btn {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: .9rem;
+  font-weight: 800;
+  background: rgba(255,255,255,.06);
   color: #fff;
-  border: 1.5px solid rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.12);
   border-radius: 8px;
   cursor: pointer;
-  transition: background .12s;
+  line-height: 1;
+  transition: transform .1s, background .12s, border-color .12s, box-shadow .12s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
-.pl-admin-ctrls button:hover { background: rgba(255,255,255,.16); }
-.pl-admin-ctrls button[data-act="pin"] { background: rgba(0,212,255,.18); border-color: rgba(0,212,255,.35); }
-.pl-admin-ctrls button[data-act="del"] { background: rgba(200,32,26,.25); border-color: rgba(200,32,26,.4); }
-.pl-admin-ctrls .val {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 1rem;
-  min-width: 32px;
-  text-align: center;
-  background: none;
-  border: none;
-  padding: 0 4px;
+.ar-btn:hover { transform: translateY(-1px); }
+.ar-btn:active { transform: translateY(1px); }
+
+/* Variantes — pontos */
+.ar-btn.ar-minus {
+  background: rgba(200,32,26,.16);
+  border-color: rgba(200,32,26,.4);
+  color: #ff7a76;
+}
+.ar-btn.ar-minus:hover {
+  background: rgba(200,32,26,.3);
+  box-shadow: 0 2px 12px rgba(200,32,26,.3);
+}
+.ar-btn.ar-plus {
+  background: rgba(24,128,58,.18);
+  border-color: rgba(24,128,58,.5);
+  color: #5cd18a;
+}
+.ar-btn.ar-plus:hover {
+  background: rgba(24,128,58,.32);
+  box-shadow: 0 2px 12px rgba(24,128,58,.3);
+}
+
+/* Variantes — moedas (dourado) */
+.ar-btn.ar-coin-minus,
+.ar-btn.ar-coin-plus {
+  background: rgba(217,160,40,.14);
+  border-color: rgba(217,160,40,.4);
+  color: #f0b048;
+}
+.ar-btn.ar-coin-minus:hover,
+.ar-btn.ar-coin-plus:hover {
+  background: rgba(217,160,40,.26);
+  box-shadow: 0 2px 12px rgba(217,160,40,.3);
+}
+
+/* PIN button (no header) */
+.ar-btn.ar-pin {
+  background: rgba(0,212,255,.14);
+  border-color: rgba(0,212,255,.5);
   color: var(--cyan);
+  font-size: .8rem;
+  padding: 0 10px;
+  letter-spacing: .05em;
 }
-@media (max-width: 540px) {
-  .pl-admin-row { grid-template-columns: 1fr; }
-  .pl-admin-ctrls { justify-content: flex-start; }
+.ar-btn.ar-pin:hover {
+  background: rgba(0,212,255,.28);
+  box-shadow: 0 2px 12px rgba(0,212,255,.3);
 }
+
+/* DELETE button (no header) */
+.ar-btn.ar-del {
+  background: rgba(200,32,26,.28);
+  border-color: rgba(200,32,26,.6);
+  color: #fff;
+}
+.ar-btn.ar-del:hover {
+  background: rgba(200,32,26,.45);
+  box-shadow: 0 2px 12px rgba(200,32,26,.4);
+}
+
+/* Valores grandes destacados */
+.ar-val {
+  font-family: 'Special Elite', monospace;
+  font-weight: 400;
+  font-size: 1.25rem;
+  min-width: 36px;
+  text-align: center;
+  background: rgba(0,0,0,.45);
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.ar-val-pts { color: var(--cyan); }
+.ar-val-moedas { color: #f0b048; }
 
 .pl-admin-global {
   border-top: 1.5px dashed rgba(255,255,255,.12);

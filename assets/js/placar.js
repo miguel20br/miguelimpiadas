@@ -292,7 +292,7 @@ function renderList() {
 function applyAdminFilter() {
   const q = (els.adminSearch?.value || "").toLowerCase().trim();
   document.querySelectorAll(".pl-admin-row").forEach((row) => {
-    const nome = row.querySelector(".pl-admin-nome")?.textContent.toLowerCase() || "";
+    const nome = row.querySelector(".ar-nome")?.textContent.toLowerCase() || "";
     row.classList.toggle("filtered-out", q && !nome.includes(q));
   });
 }
@@ -312,19 +312,29 @@ function renderAdmin() {
     .map(
       (s) => `
     <div class="pl-admin-row" data-id="${s.id}">
-      <span class="pl-admin-nome">${escapeHtml(s.nome)}${s.pin_hash ? '<span class="pl-admin-pinned" title="Atleta tem senha">🔐</span>' : ""}</span>
-      <span class="pl-admin-ctrls">
-        <button data-act="p-5">−5</button>
-        <button data-act="p-1">−1</button>
-        <span class="val">${s.pontos}</span>
-        <button data-act="p+1">+1</button>
-        <button data-act="p+5">+5</button>
-        <button data-act="m-1">−1🪙</button>
-        <span class="val">${s.moedas}</span>
-        <button data-act="m+1">+1🪙</button>
-        <button data-act="pin" title="Definir senha do atleta">🔑</button>
-        <button data-act="del" title="Remover">🗑</button>
-      </span>
+      <div class="ar-head">
+        <span class="ar-nome">${escapeHtml(s.nome)}${s.pin_hash ? '<span class="ar-pinned" title="Atleta tem senha">🔐</span>' : ""}</span>
+        <div class="ar-head-actions">
+          <button class="ar-btn ar-pin" data-act="pin" title="Definir senha">🔑 senha</button>
+          <button class="ar-btn ar-del" data-act="del" title="Remover atleta">🗑</button>
+        </div>
+      </div>
+      <div class="ar-controls">
+        <div class="ar-group ar-pts">
+          <span class="ar-label">PTS</span>
+          <button class="ar-btn ar-minus" data-act="p-5">−5</button>
+          <button class="ar-btn ar-minus" data-act="p-1">−1</button>
+          <span class="ar-val ar-val-pts">${s.pontos}</span>
+          <button class="ar-btn ar-plus" data-act="p+1">+1</button>
+          <button class="ar-btn ar-plus" data-act="p+5">+5</button>
+        </div>
+        <div class="ar-group ar-moedas">
+          <span class="ar-label">🪙</span>
+          <button class="ar-btn ar-coin-minus" data-act="m-1">−1</button>
+          <span class="ar-val ar-val-moedas">${s.moedas}</span>
+          <button class="ar-btn ar-coin-plus" data-act="m+1">+1</button>
+        </div>
+      </div>
     </div>`,
     )
     .join("");
