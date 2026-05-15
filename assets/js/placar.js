@@ -168,21 +168,39 @@ function renderMeBanner() {
 
 function renderList() {
   const hidden = state.config.placar_oculto;
+  const isAdmin = state.identity?.kind === "admin";
+  // Atletas e não-logados veem "?" quando placar oculto; admin vê tudo
+  const showHidden = hidden && !isAdmin;
   const meId = state.identity?.kind === "athlete" ? state.identity.score_id : null;
+
   if (!state.scores.length) {
     els.list.innerHTML = `<li class="pl-empty">Sem atletas cadastrados ainda.<small>Miguel: clique 🔑, faça login, e use o painel admin pra cadastrar.</small></li>`;
     return;
   }
-  const sorted = [...state.scores].sort((a, b) => b.pontos - a.pontos || a.ordem - b.ordem);
+
+  // Quando oculto, ordem fixa de inserção (não revela ranking pela posição visual)
+  const sorted = showHidden
+    ? [...state.scores].sort((a, b) => a.ordem - b.ordem)
+    : [...state.scores].sort((a, b) => b.pontos - a.pontos || a.ordem - b.ordem);
+
   els.list.innerHTML = sorted
     .map((s, i) => {
-      const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "";
+      const medal = !showHidden && i === 0 ? "🥇"
+                  : !showHidden && i === 1 ? "🥈"
+                  : !showHidden && i === 2 ? "🥉" : "";
       const me = s.id === meId;
-      const cls = ["pl-row", i < 3 && "podio", hidden && "oculto", me && "me"].filter(Boolean).join(" ");
+      const cls = ["pl-row",
+                   !showHidden && i < 3 && "podio",
+                   showHidden && "oculto",
+                   me && "me"].filter(Boolean).join(" ");
+      const posCell = showHidden ? "?" : (i + 1);
+      const pontosCell = showHidden
+        ? `?<span class="pl-unit">MPTS</span>`
+        : `${s.pontos}<span class="pl-unit">MPTS</span>`;
       return `<li class="${cls}">
-        <span class="pl-pos">${i + 1}</span>
+        <span class="pl-pos">${posCell}</span>
         <span class="pl-nome">${escapeHtml(s.nome)} ${medal}${me ? '<span class="pl-me-tag">você</span>' : ""}</span>
-        <span class="pl-pontos">${s.pontos}<span class="pl-unit">MPTS</span></span>
+        <span class="pl-pontos">${pontosCell}</span>
         <span class="pl-moedas">${s.moedas}🪙</span>
       </li>`;
     })
