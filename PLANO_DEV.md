@@ -1,126 +1,120 @@
-# Plano de Desenvolvimento — Miguelimpíadas
+# Miguelimpíadas — Estado do Projeto
 
-> Salvo em 15/05/2026 para continuidade em outra máquina.
+> Atualizado em **15/05/2026** (véspera do evento).
+> Plano original (Firebase + GitHub Pages) substituído pelo que foi efetivamente implementado.
 
-## Contexto
+---
 
-Site do evento Miguelimpíadas (16/05/2026 às 14h, Casa do Peppa — Karaíba).
-`index.html` é o guia do atleta v7.0 (1.4MB, vanilla HTML/CSS/JS, tudo inline).
+## Status: PRONTO ✅
 
-## O que falta construir
+Tudo no ar, testado, deployado. Evento dia **16/05/2026 às 14h** (Casa do Peppa — Karaíba).
 
-### 1. Separar CSS e JS do HTML
+---
 
-Extrair o `<style>` de `index.html` → `assets/css/main.css`  
-Extrair o `<script>` de `index.html` → `assets/js/main.js`  
-Referenciar os arquivos externos no HTML.
+## URLs em produção
+
+| URL | O quê |
+|---|---|
+| `https://miguelimpiadas.vercel.app/` | Guia do Atleta (index.html) |
+| `https://miguelimpiadas.vercel.app/placar` | Placar ao vivo (Supabase Realtime) |
+| `https://miguelimpiadas.vercel.app/print/miguelimpiadas-mercado-lootbox.pdf` | 65 cartas: 36 Mercado + 29 Lootbox (8 págs A4) |
+| `https://miguelimpiadas.vercel.app/print/miguelimpiadas-cartas-do-caos.pdf` | 25 Cartas do Caos (4 págs A4) |
+
+---
+
+## Stack
+
+- **HTML/CSS/JS vanilla** (sem build step)
+- **Vercel** — deploy contínuo de `main` (git push = deploy)
+- **Supabase** — Postgres + Realtime + RLS pro placar
+- **Playwright** (Python) — geração de PDFs e smoke tests
+
+---
+
+## Estrutura
 
 ```
-assets/
-  css/main.css
-  js/main.js
-  js/scoreboard.js   ← novo
+miguelimpiadas/
+├── index.html                  ← guia do atleta (rota /)
+├── placar.html                 ← placar ao vivo (rota /placar)
+├── vercel.json                 ← config + cache headers
+├── assets/
+│   ├── css/main.css            ← estilos do guia
+│   ├── css/placar.css          ← estilos do placar
+│   ├── js/main.js              ← lógica do guia (modal, manual, etc.)
+│   ├── js/placar.js            ← cliente Supabase + UI do placar
+│   └── img/                    ← 4 mascotes extraídas do HTML
+├── print/
+│   ├── miguelimpiadas-mercado-lootbox.pdf
+│   └── miguelimpiadas-cartas-do-caos.pdf
+├── supabase/
+│   └── migrations/             ← schema + RLS + funções PIN auth
+├── scripts/                    ← ferramentas locais (gitignored)
+├── manual_operador_v7_0.md     ← manual privado (gitignored)
+├── README.md
+└── PLANO_DEV.md                ← este arquivo
 ```
 
-### 2. Scoreboard ao Vivo (Firebase Realtime Database)
+---
 
-**Requisitos:**
-- Botão flutuante `📊 Ver Tabela` (fixo, canto inferior direito)
-- Bottom sheet com ranking em tempo real
-- Só Miguel pode editar (PIN secreto)
-- Quando `placarOculto = true` → pontos sumem para todos
+## Como manter
 
-**Stack:**
-- Firebase Realtime Database (sync <1s, gratuito)
-- PIN client-side para admin (OK para evento de 1 dia)
-- Sem backend, funciona no GitHub Pages
+### Mudar descrição/quantidade/piada de carta Mercado ou Lootbox
+1. Editar a carta no `index.html` (procurar pelo nome via grep)
+2. Se mudou quantidade: editar `QUANTITIES` dict em `scripts/gen_cards_pdf.py`
+3. Rodar: `python scripts/gen_cards_pdf.py`
+4. Conferir o PDF em `print/miguelimpiadas-mercado-lootbox.pdf`
+5. `git add print/ index.html && git commit && git push`
 
-**Ação necessária de Miguel antes de implementar:**
-1. Criar projeto em https://console.firebase.google.com
-2. Ativar Realtime Database
-3. Copiar `firebaseConfig` e colar em `assets/js/scoreboard.js`
+### Mudar Carta do Caos
+1. Editar `manual_operador_v7_0.md` na seção "Baralho de Cartas de Caos"
+2. Editar a lista `CARDS` em `scripts/gen_caos_pdf.py` (não lê do manual automaticamente)
+3. Rodar: `python scripts/gen_caos_pdf.py`
+4. `git add print/ && git commit && git push`
 
-**Estrutura dos dados no Firebase:**
-```json
-{
-  "config": {
-    "placarOculto": false,
-    "fase": "Aguardando início"
-  },
-  "scores": {
-    "jogador1": { "nome": "João",  "pontos": 0, "moedas": 3 },
-    "jogador2": { "nome": "Pedro", "pontos": 0, "moedas": 3 }
-  }
-}
-```
+### Adicionar atleta no placar (durante o evento)
+1. Abrir `/placar` → 🔑 → Admin → senha `miguel`
+2. **+ Atleta** → nome + senha pra ele
+3. Atleta usa a senha em qualquer dispositivo dele e fica destacado
 
-**UI do Scoreboard:**
-```
-┌──────────────────────────────────┐
-│ 📊 PLACAR AO VIVO          🔑  ✕ │
-├──────────────────────────────────┤
-│  #  │ Atleta │ MPTS │  M$  │     │
-│  1  │  João  │  22  │  5🪙 │ 🥇  │
-│  2  │  Pedro │  18  │  3🪙 │ 🥈  │
-└──────────────────────────────────┘
-```
+### Operação geral do placar durante o evento
+- **+1/+5/−1/−5** pontos e moedas
+- **🔑 (por linha)** — define/troca senha do atleta
+- **Placar Oculto** — esconde pontos pra todos (mostra só ranking)
+- **Fase atual** — texto que aparece no topo (ex: "Round 3 — Quizzes")
+- **Resetar tudo** — zera pontos pra 0 e moedas pra 3 (mantém atletas)
 
-**Modo Admin (🔑 → digitar PIN):**
-```
-│  João  │ [−5][−1] 22 [+1][+5] │ [−1]5[+1] │
-```
-Também: toggle Placar Oculto, campo "Fase atual", botão Resetar.
+---
 
-### 3. Regras Firebase Security
+## Supabase
 
-```json
-{
-  "rules": {
-    ".read": true,
-    ".write": false,
-    "scores": { ".write": true },
-    "config": { ".write": true }
-  }
-}
-```
-*(Escrita liberada — PIN é a proteção. Aceitável para evento de 1 dia.)*
+- Projeto: **miguelimpiadas** (`honpawztvfdplieezuko`, região `sa-east-1`)
+- Tabelas: `scores`, `config`
+- Master PIN definido: **`miguel`**
+- RLS: leitura pública, escrita só via SECURITY DEFINER RPCs com bcrypt
+- Migrations versionadas em `supabase/migrations/`
 
-### 4. Skills de Design (Claude Code global)
+---
 
-Executar no terminal:
-```bash
-npx skills add pbakaus/impeccable
-npx skills add nextlevelbuilder/ui-ux-pro-max-skill
-npx skills add leonxlnx/taste-skill
-```
+## Scripts em `scripts/` (gitignored, descartáveis)
 
-Playwright → configurar como MCP server (`@playwright/mcp`) via `/update-config`.
+| Script | O quê |
+|---|---|
+| `gen_cards_pdf.py` | Gera `miguelimpiadas-mercado-lootbox.pdf` |
+| `gen_caos_pdf.py` | Gera `miguelimpiadas-cartas-do-caos.pdf` |
+| `preview_cards_pages.py` | Screenshot página por página do Mercado/Lootbox |
+| `preview_caos_pages.py` | Mesma coisa pro Caos |
+| `mobile_audit.py` | Auditoria responsiva via Playwright |
+| `smoke.py`, `smoke_placar_page.py`, `smoke_admin_pin.py` | Smoke tests do site |
 
-### 5. Responsividade Mobile
+Pra rodar: `python scripts/<script>.py` (precisa Playwright instalado).
 
-Breakpoints existentes: 720px, 560px, 500px, 480px, 380px.
+---
 
-Pontos a revisar:
-- Hero title overflow em 320px
-- Touch targets ≥ 44px nos grids de itens
-- Bottom sheet: 100% largura, max 85vh com scroll, safe area iOS
-- Botão "Ver Tabela" não sobrepor nav inferior do iPhone
+## Notas finais
 
-### 6. Deploy
-
-```bash
-git push origin main
-```
-Ativar GitHub Pages: Settings → Pages → Branch main, pasta `/`.
-
-## Ordem de execução sugerida
-
-1. `git init` + remote + `.gitignore` ← **feito**
-2. Separar CSS/JS (arquivo grande ~1.4MB, usar script Python)
-3. Criar `scoreboard.js` com Firebase config placeholder
-4. Adicionar botão + bottom sheet ao `index.html`
-5. Corrigir responsividade
-6. Instalar skills
-7. Miguel cria projeto Firebase e cola config
-8. Testar localmente (`python -m http.server 8080`)
-9. Push final
+- Master PIN do admin é client-side simples (`"miguel"`), suficiente pra evento de 1 dia
+- Atletas se autenticam com PIN próprio que escolhem na 1ª vez
+- Bcrypt cost 8 no Postgres — PINs nunca trafegam em claro depois do submit
+- 90 cartas físicas totais (36+29+25) prontas em 12 páginas A4 com marcas de corte
+- Imprimir com "Cores e imagens de fundo" ativado nas configs da impressora
