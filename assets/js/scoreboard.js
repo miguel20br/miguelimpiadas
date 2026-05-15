@@ -104,6 +104,7 @@ const css = `
 .sb-admin-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;
   padding:10px 12px;background:rgba(26,108,255,.04);border-radius:10px;margin-bottom:6px}
 .sb-admin-nome{font-family:'Boogaloo',sans-serif;font-size:1.05rem}
+.sb-admin-pinned{font-size:.75rem;opacity:.6;vertical-align:1px}
 .sb-admin-ctrls{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
 .sb-admin-ctrls button{min-width:38px;min-height:38px;padding:6px 8px;font-size:.85rem;font-weight:700;
   background:#fff;border:2px solid var(--ink,#080f1f);border-radius:8px;cursor:pointer;
@@ -324,7 +325,7 @@ function renderAdmin() {
     .map(
       (s) => `
     <div class="sb-admin-row" data-id="${s.id}">
-      <span class="sb-admin-nome">${escapeHtml(s.nome)}</span>
+      <span class="sb-admin-nome">${escapeHtml(s.nome)}${s.pin_hash ? ' <span class="sb-admin-pinned" title="Atleta tem senha">🔐</span>' : ""}</span>
       <span class="sb-admin-ctrls">
         <button data-act="p-5">−5</button>
         <button data-act="p-1">−1</button>
@@ -334,6 +335,7 @@ function renderAdmin() {
         <button data-act="m-1">−1🪙</button>
         <span class="val">${s.moedas}</span>
         <button data-act="m+1">+1🪙</button>
+        <button data-act="pin" title="Definir senha do atleta">🔑</button>
         <button data-act="del" title="Remover" style="background:var(--red,#c8201a);color:#fff;border-color:var(--red,#c8201a)">🗑</button>
       </span>
     </div>`,
@@ -352,6 +354,14 @@ async function adminAct(id, act) {
     await rpc("admin_delete_athlete", { pin_in: state.identity.pin, sid: id });
     return;
   }
+  if (act === "pin") {
+    const label = s.pin_hash ? `Nova senha para ${s.nome} (substitui a atual):` : `Senha para ${s.nome} (mín 4 chars):`;
+    const newPin = prompt(label);
+    if (!newPin) return;
+    if (newPin.length < 4) { alert("Senha mínimo 4 caracteres"); return; }
+    await rpc("admin_set_athlete_pin", { pin_in: state.identity.pin, sid: id, new_pin: newPin });
+    return;
+  }
   let pontos = s.pontos, moedas = s.moedas;
   if (act === "p+1") pontos++;
   else if (act === "p-1") pontos--;
@@ -365,7 +375,14 @@ async function adminAct(id, act) {
 async function addAtleta() {
   const nome = prompt("Nome do atleta:");
   if (!nome?.trim()) return;
-  await rpc("admin_add_athlete", { pin_in: state.identity.pin, nome_in: nome.trim() });
+  const newId = await rpc("admin_add_athlete", { pin_in: state.identity.pin, nome_in: nome.trim() });
+  if (!newId) return;
+  const pin = prompt(`Senha de ${nome.trim()} (mín 4 chars, ou cancele pra ele(a) criar depois):`);
+  if (pin && pin.length >= 4) {
+    await rpc("admin_set_athlete_pin", { pin_in: state.identity.pin, sid: newId, new_pin: pin });
+  } else if (pin) {
+    alert("Senha curta, atleta vai criar a própria depois");
+  }
 }
 async function resetAll() {
   if (!confirm("Resetar TODOS os atletas para 0 pontos e 3 moedas?")) return;
@@ -481,7 +498,7 @@ async function handleLogin(e) {
 // =============================================================
 async function loadAll() {
   const [{ data: scores }, { data: config }] = await Promise.all([
-    supabase.from("scores").select("id, nome, pontos, moedas, ordem, updated_at"),
+    supabase.from("scores").select("id, nome, pontos, moedas, ordem, updated_at, pin_hash"),
     supabase.from("config").select("k, v"),
   ]);
   state.scores = scores || [];
