@@ -93,7 +93,7 @@ function refreshLoginOptions() {
     `<option value="admin">👑 Admin (Miguel)</option>` +
     state.scores
       .slice()
-      .sort((a, b) => a.ordem - b.ordem)
+      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
       .map((s) => `<option value="athlete:${s.id}">🏃 ${escapeHtml(s.nome)}</option>`)
       .join("");
   if (cur && els.loginWho.querySelector(`option[value="${cur}"]`)) els.loginWho.value = cur;
@@ -178,10 +178,10 @@ function renderList() {
     return;
   }
 
-  // Quando oculto, ordem fixa de inserção (não revela ranking pela posição visual)
+  // Quando oculto, ordem alfabética por nome (não revela ranking pela posição visual)
   const sorted = showHidden
-    ? [...state.scores].sort((a, b) => a.ordem - b.ordem)
-    : [...state.scores].sort((a, b) => b.pontos - a.pontos || a.ordem - b.ordem);
+    ? [...state.scores].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
+    : [...state.scores].sort((a, b) => b.pontos - a.pontos || a.nome.localeCompare(b.nome, "pt-BR"));
 
   els.list.innerHTML = sorted
     .map((s, i) => {
@@ -215,7 +215,7 @@ function renderAdmin() {
     return;
   }
   els.adminList.innerHTML = [...state.scores]
-    .sort((a, b) => a.ordem - b.ordem)
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
     .map(
       (s) => `
     <div class="pl-admin-row" data-id="${s.id}">
