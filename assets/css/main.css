@@ -176,6 +176,8 @@ tbody tr:last-child td{border-bottom:none}
 .item-name{font-family:'Boogaloo',sans-serif;font-size:1.05rem;color:var(--ink);line-height:1.2}
 .item-cost{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:var(--muted)}
 .item-desc{font-size:.8125rem;font-weight:600;line-height:1.5;color:var(--ink-mid)}
+.item-desc .flavor{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(96,112,160,.3);font-style:italic;font-size:.78rem;font-weight:500;color:var(--muted);line-height:1.4}
+.modal-flavor{margin-top:12px;padding-top:10px;border-top:1px dashed rgba(96,112,160,.35);font-style:italic;color:var(--muted);font-size:.92em;line-height:1.5}
 .loot-section-title{font-family:'Boogaloo',sans-serif;font-size:1.8rem;color:var(--ink);margin-bottom:8px}
 .loot-intro{font-size:.9375rem;font-weight:600;color:var(--ink-mid);line-height:1.6;max-width:60ch;margin-bottom:24px}
 .loot-intro strong{color:var(--ink)}

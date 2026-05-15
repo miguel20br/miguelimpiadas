@@ -112,7 +112,18 @@ function openModal(cat,name,cost,desc,type){
   document.getElementById('modal-cat').innerHTML=`<span style="display:inline-block;padding:3px 10px;border-radius:4px;background:${bg};color:${col};font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase">${cat}</span>`;
   document.getElementById('modal-name').textContent=name;
   document.getElementById('modal-cost').textContent=cost;
-  document.getElementById('modal-desc').textContent=desc;
+  const [rule, flavor] = desc.split(' // ');
+  const descEl = document.getElementById('modal-desc');
+  descEl.innerHTML = '';
+  const p1 = document.createElement('p');
+  p1.textContent = rule;
+  descEl.appendChild(p1);
+  if (flavor) {
+    const p2 = document.createElement('p');
+    p2.textContent = flavor;
+    p2.className = 'modal-flavor';
+    descEl.appendChild(p2);
+  }
   document.getElementById('modal').classList.add('open');
   document.body.style.overflow='hidden';
   document.documentElement.style.overflow='hidden';
@@ -357,3 +368,18 @@ function highlightText(node, re){
     Array.from(node.childNodes).forEach(child=>highlightText(child,re));
   }
 }
+
+// ── Formata .item-desc com flavor text: "regra // piada" → regra + <span class="flavor">piada</span>
+document.querySelectorAll('.item-desc').forEach(el => {
+  const text = el.textContent;
+  const idx = text.indexOf(' // ');
+  if (idx === -1) return;
+  const rule = text.slice(0, idx);
+  const flavor = text.slice(idx + 4);
+  el.innerHTML = '';
+  el.appendChild(document.createTextNode(rule));
+  const span = document.createElement('span');
+  span.className = 'flavor';
+  span.textContent = flavor;
+  el.appendChild(span);
+});
